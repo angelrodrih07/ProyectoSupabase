@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .contenedor {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 420px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            justify-items: center;
+            margin-bottom: 10px;
+        }
+
+        .loguito{
+            width: 100px;
+            height: 100px;
+            background-image: url('logo.png');
+            background-size: cover;
+        }
+
+        .titulo {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 15px 18px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .campo input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .campo input::placeholder {
+            color: #999;
+        }
+
+        .campo-contraseña {
+            position: relative;
+        }
+
+        .campo-contraseña input {
+            padding-right: 50px;
+        }
+
+        .ver-contraseña {
+            position: absolute;
+            right: 18px;
+            top: 30%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+
+        .ver-contraseña:hover {
+            color: #333;
+        }
+
+        .boton {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(#3b82f6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+        }
+
+        .boton a{
+            text-decoration: none;
+            color:white;
+        }
+
+        .boton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px #3b82f6;
+        }
+
+        .enlace-cambio {
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .enlace-cambio p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .enlace-cambio a {
+            color: black;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .enlace-cambio a:hover {
+            color: black;
+            text-decoration: underline;
+        }
+
+        .checkbox-grupo {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .checkbox-grupo input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .checkbox-grupo label {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .olvide-contraseña {
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        .olvide-contraseña a {
+            color: black;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .olvide-contraseña a:hover {
+            text-decoration: underline;
+        }
+
+
+        .formularios {
+            width: 100%;
+        }
+
+        .formulario-login,
+        .formulario-registro {
+            display: none;
+        }
+
+
+        .formulario-login {
+            display: block;
+        }
+
+
+        #login:target ~ .formularios .formulario-login {
+            display: block;
+        }
+
+        #login:target ~ .formularios .formulario-registro {
+            display: none;
+        }
+
+        #registro:target ~ .formularios .formulario-login {
+            display: none;
+        }
+
+        #registro:target ~ .formularios .formulario-registro {
+            display: block;
+        }
+
+
+        @media (max-width: 480px) {
+            .contenedor {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .titulo {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<script>
+  // Función para mostrar/ocultar contraseña
+  function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    if (input.type === "password") {
+      input.type = "text";
+      button.textContent = "☑";
+    } else {
+      input.type = "password";
+      button.textContent = "◻";
+    }
+  }
+</script>
+<script type="module">
+  // --- Conexión con Supabase (usa tu URL/ANON_KEY actual) ---
+  const SUPABASE_URL = 'https://ohhvgpiyhdxaomceabrt.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oaHZncGl5aGR4YW9tY2VhYnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDc2OTYsImV4cCI6MjA3NTc4MzY5Nn0.tH3urHEiJYVNcFI98aXVCaalkRcBIvKVp3G2fTq34Ao';
+
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Selecciona el formulario dentro del bloque .formulario-login
+  const form = document.querySelector(".formulario-login form");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const usuario = document.getElementById("usuario").value.trim();
+    const contraseña = document.getElementById("contraseña").value.trim();
+
+    if (!usuario || !contraseña) {
+      alert("Por favor, completa todos los campos.");
+      return;
+    }
+
+    // Busca el usuario en Supabase
+    const { data, error } = await supabase
+      .from("usuarios")
+      .select("*")
+      .eq("usuario", usuario)
+      .single();
+
+    if (error || !data) {
+      alert("Usuario no encontrado.");
+      return;
+    }
+
+    // Comparación simple: contraseña en texto plano (lo que estás usando ahora)
+    if (data.clave !== contraseña) {
+      alert("Contraseña incorrecta.");
+      return;
+    }
+
+    // Guardar sesión en localStorage (info mínima)
+    localStorage.setItem("usuarioActivo", JSON.stringify({
+      id: data.id_usuario,
+      nombre: data.nombre,
+      rol: data.rol
+    }));
+
+    // Redirigir al sistema
+    window.location.href = "index.html";
+  });
+</script>
+
+<body>
+    <div class="contenedor">
+        <div class="logo">
+            <div class="loguito"></div>
+        </div>
+
+
+        <div id="login"></div>
+        <div id="registro"></div>
+
+        <div class="formularios">
+            <div class="formulario-login">
+                <h2 class="titulo">Iniciar Sesión</h2>
+                
+                <form>
+                    <div class="campo">
+                        <label for="usuario">Nombre de usuario</label>
+                        <input type="text" id="usuario" name="usuario" placeholder="Ingresa tu usuario" required>
+                    </div>
+                    
+                    <div class="campo">
+                        <label for="contraseña">Contraseña</label>
+                        <div class="campo-contraseña">
+                            <input type="password" id="contraseña" name="contraseña" placeholder="Ingresa tu contraseña" required>
+                            <button type="button" class="ver-contraseña" onclick="togglePassword('contraseña', this)">◻</button>
+                        </div>
+                        <div class="olvide-contraseña">
+                            <a href="#">¿Olvidaste tu contraseña?</a>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-grupo">
+                        <input type="checkbox" id="recordar" name="recordar">
+                        <label for="recordar">Recordarme</label>
+                    </div>
+                    
+                    <button type="submit" class="boton">Inciar sesión</a></button>
+                </form>
+                
+                <div class="enlace-cambio">
+                    <p>¿No tienes cuenta? <a href="#registro">Regístrate aquí</a></p>
+                </div>
+            </div>
+
+
+            <div class="formulario-registro">
+                <h2 class="titulo">Crear Cuenta</h2>
+                
+                <form>
+                    <div class="campo">
+                        <label for="nuevo-usuario">Nombre de usuario</label>
+                        <input type="text" id="nuevo-usuario" name="usuario" placeholder="Elige un usuario" required>
+                    </div>
+                    
+                    <div class="campo">
+                        <label for="email">Correo electrónico</label>
+                        <input type="email" id="email" name="email" placeholder="tu@email.com" required>
+                    </div>
+                    
+                    <div class="campo">
+                        <label for="nueva-contraseña">Contraseña</label>
+                        <div class="campo-contraseña">
+                            <input type="password" id="nueva-contraseña" name="contraseña" placeholder="Mínimo 6 caracteres" required>
+                            <button type="button" class="ver-contraseña" onclick="togglePassword('nueva-contraseña', this)">◻</button>
+                        </div>
+                    </div>
+                    
+                    <div class="campo">
+                        <label for="confirmar-contraseña">Confirmar contraseña</label>
+                        <div class="campo-contraseña">
+                            <input type="password" id="confirmar-contraseña" name="confirmar-contraseña" placeholder="Repite tu contraseña" required>
+                            <button type="button" class="ver-contraseña" onclick="togglePassword('confirmar-contraseña', this)">◻</button>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-grupo">
+                        <input type="checkbox" id="terminos" name="terminos" required>
+                        <label for="terminos">Acepto los <a href="#" style="color: #667eea;">términos y condiciones</a></label>
+                    </div>
+                    
+                    <button type="submit" class="boton">Crear Cuenta</button>
+                </form>
+                
+                <div class="enlace-cambio">
+                    <p>¿Ya tienes cuenta? <a href="#login">Iniciar sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

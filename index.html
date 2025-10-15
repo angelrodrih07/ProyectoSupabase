@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Inventario Escolar</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--p:#3b82f6;--s:#10b981;--d:#ef4444;--w:#f59e0b}
+    body{font-family:system-ui,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh}
+    nav{background:#fff;padding:1rem 2rem;display:flex;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .logo{font-size:1.5rem;font-weight:800;color:var(--p)}
+    .nav-links{display:flex;gap:1rem;list-style:none}
+    .nav-links a{color:#333;text-decoration:none;padding:.5rem 1rem;border-radius:8px;font-weight:500}
+    .nav-links a:hover{background:#f1f5f9;color:var(--p)}
+    .nav-links a.active{background:var(--p);color:#fff}
+    .container{max-width:1400px;margin:0 auto;padding:2rem}
+    .page{display:none}
+    .page.active{display:block;animation:fadeIn .3s}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .hero{background:#fff;border-radius:20px;padding:3rem;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.1);margin-bottom:2rem}
+    .hero h1{font-size:2.5rem;margin-bottom:1rem}
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem}
+    .feature-card{background:#fff;border-radius:16px;padding:2rem;text-align:center;box-shadow:0 4px 15px rgba(0,0,0,.1);cursor:pointer;transition:.3s}
+    .feature-card:hover{transform:translateY(-5px)}
+    .feature-icon{font-size:3rem;margin-bottom:1rem}
+    .card{background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 15px rgba(0,0,0,.1);margin-bottom:2rem}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e2e8f0}
+    .card-header h2{font-size:1.5rem}
+    table{width:100%;border-collapse:collapse}
+    th{background:#f8fafc;padding:1rem;text-align:left;font-weight:700;border-bottom:2px solid #e2e8f0}
+    td{padding:1rem;border-bottom:1px solid #e2e8f0}
+    tbody tr:hover{background:#f8fafc}
+    tbody tr.inactive{opacity:.6;background:#f1f5f9}
+    tbody tr.inactive td{text-decoration:line-through;color:#64748b}
+    .btn{padding:.75rem 1.5rem;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:.3s}
+    .btn-primary{background:var(--p);color:#fff}
+    .btn-success{background:var(--s);color:#fff}
+    .btn-danger{background:var(--d);color:#fff}
+    .btn-warning{background:var(--w);color:#fff}
+    .btn-secondary{background:#6b7280;color:#fff}
+    .btn-small{padding:.5rem 1rem;font-size:.875rem}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+    .modal.active{display:flex}
+    .modal-content{background:#fff;border-radius:16px;padding:2rem;max-width:600px;width:90%;max-height:90vh;overflow-y:auto}
+    .modal-header{display:flex;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e2e8f0}
+    .close{background:none;border:none;font-size:1.5rem;cursor:pointer}
+    .form-group{margin-bottom:1rem}
+    label{display:block;font-weight:600;margin-bottom:.5rem}
+    input,select,textarea{width:100%;padding:.75rem;border:2px solid #e2e8f0;border-radius:8px}
+    textarea{resize:vertical;min-height:80px}
+    .badge{padding:.25rem .75rem;border-radius:20px;font-size:.875rem;font-weight:600}
+    .badge-info{background:#dbeafe;color:#1e40af}
+    .badge-success{background:#d1fae5;color:#065f46}
+    .badge-danger{background:#fee2e2;color:#991b1b}
+    .alert{padding:1rem;border-radius:8px;margin-bottom:1rem;display:none}
+    .alert.show{display:block}
+    .alert-success{background:#d1fae5;color:#065f46;border-left:4px solid var(--s)}
+    .alert-danger{background:#fee2e2;color:#991b1b;border-left:4px solid var(--d)}
+    img{width:70px; height: 70px;}
+    @media(max-width:768px){nav{flex-direction:column;gap:1rem}.nav-links{flex-wrap:wrap;justify-content:center}}
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo"><img src="caja-de-entrega.png" alt="Icono de caja"> Inventario Escolar</div>
+    <ul class="nav-links">
+      <li><a href="#" data-page="home" class="active">Inicio</a></li>
+      <li><a href="#" data-page="usuarios">Usuarios</a></li>
+      <li><a href="#" data-page="categorias">Categorías</a></li>
+      <li><a href="#" data-page="articulos">Artículos</a></li>
+      <li><a href="#" data-page="movimientos">Movimientos</a></li>
+      <li><a href="#" id="logout">Cerrar sesión</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div id="alert-container"></div>
+
+    <div id="home" class="page active">
+      <div class="hero">
+        <h1><img src="graduado.png" alt="Icono de caja"> Sistema de Inventario Escolar</h1>
+        <p>Gestiona el inventario de tu institución</p>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-card" data-navigate="usuarios">
+          <div class="feature-icon">👥</div>
+          <h3>Usuarios</h3>
+          <p>Administra usuarios y roles</p>
+        </div>
+        <div class="feature-card" data-navigate="categorias">
+          <div class="feature-icon"><img src="categorias-de-producto.png" alt="Icono de caja"></div>
+          <h3>Categorías</h3>
+          <p>Organiza tus artículos</p>
+        </div>
+        <div class="feature-card" data-navigate="articulos">
+          <div class="feature-icon"><img src="caja-de-entrega.png" alt="Icono de caja"></div>
+          <h3>Artículos</h3>
+          <p>Control de inventario</p>
+        </div>
+        <div class="feature-card" data-navigate="movimientos">
+          <div class="feature-icon"><img src="organizacion.png" alt="Icono de caja"></div>
+          <h3>Movimientos</h3>
+          <p>Entradas y salidas</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="usuarios" class="page">
+      <div class="card">
+        <div class="card-header">
+          <h2>👥 Usuarios</h2>
+          <button class="btn btn-primary" onclick="openModal('usuario')">+ Nuevo</button>
+        </div>
+        <table id="tabla-usuarios">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="categorias" class="page">
+      <div class="card">
+        <div class="card-header">
+          <h2><img src="categorias-de-producto.png" alt="Icono de caja"> Categorías</h2>
+          <button class="btn btn-primary" onclick="openModal('categoria')">+ Nueva</button>
+        </div>
+        <table id="tabla-categorias">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="articulos" class="page">
+      <div class="card">
+        <div class="card-header">
+          <h2><img src="caja-de-entrega.png" alt="Icono de caja"> Artículos</h2>
+          <button class="btn btn-primary" onclick="openModal('articulo')">+ Nuevo</button>
+        </div>
+        <table id="tabla-articulos">
+          <thead><tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Ubicación</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="movimientos" class="page">
+      <div class="card">
+        <div class="card-header">
+          <h2><img src="organizacion.png" alt="Icono de caja"> Movimientos</h2>
+          <button class="btn btn-primary" onclick="openModal('movimiento')">+ Nuevo</button>
+        </div>
+        <table id="tabla-movimientos">
+          <thead><tr><th>ID</th><th>Artículo</th><th>Tipo</th><th>Cantidad</th><th>Usuario</th><th>Fecha</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-usuario" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="title-usuario">Usuario</h3>
+        <button class="close" onclick="closeModal('usuario')">&times;</button>
+      </div>
+      <form id="form-usuario">
+        <input type="hidden" id="id-usuario">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="nombre-usuario" required>
+        </div>
+        <div class="form-group">
+          <label>Usuario *</label>
+          <input type="text" id="usuario-usuario" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <input type="password" id="clave-usuario" required>
+        </div>
+        <div class="form-group">
+          <label>Rol</label>
+          <select id="rol-usuario">
+            <option value="encargado">Encargado</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-categoria" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="title-categoria">Categoría</h3>
+        <button class="close" onclick="closeModal('categoria')">&times;</button>
+      </div>
+      <form id="form-categoria">
+        <input type="hidden" id="id-categoria">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="nombre-categoria" required>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="desc-categoria"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-articulo" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="title-articulo">Artículo</h3>
+        <button class="close" onclick="closeModal('articulo')">&times;</button>
+      </div>
+      <form id="form-articulo">
+        <input type="hidden" id="id-articulo">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="nombre-articulo" required>
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select id="cat-articulo"></select>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="desc-articulo"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Stock Inicial</label>
+          <input type="number" id="stock-articulo" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Ubicación</label>
+          <input type="text" id="ubic-articulo">
+        </div>
+        <button type="submit" class="btn btn-success">Guardar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-movimiento" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Movimiento</h3>
+        <button class="close" onclick="closeModal('movimiento')">&times;</button>
+      </div>
+      <form id="form-movimiento">
+        <div class="form-group">
+          <label>Artículo *</label>
+          <select id="art-movimiento" required></select>
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="tipo-movimiento">
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cantidad *</label>
+          <input type="number" id="cant-movimiento" min="1" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Usuario</label>
+          <select id="user-movimiento"></select>
+        </div>
+        <div class="form-group">
+          <label>Observaciones</label>
+          <textarea id="obs-movimiento"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Registrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    const sesion = localStorage.getItem("usuarioActivo");
+    if (!sesion) {
+        window.location.href = "login.html";
+    }
+
+    const SUPABASE_URL = 'https://ohhvgpiyhdxaomceabrt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9oaHZncGl5aGR4YW9tY2VhYnJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMDc2OTYsImV4cCI6MjA3NTc4MzY5Nn0.tH3urHEiJYVNcFI98aXVCaalkRcBIvKVp3G2fTq34Ao';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let cache = {usuarios:[],categorias:[],articulos:[]};
+
+    document.querySelectorAll('.nav-links a').forEach(l=>l.addEventListener('click',e=>{e.preventDefault();nav(l.dataset.page)}));
+    document.querySelectorAll('.feature-card').forEach(c=>c.addEventListener('click',()=>nav(c.dataset.navigate)));
+
+    function nav(p){
+      document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+      document.querySelectorAll('.nav-links a').forEach(x=>x.classList.remove('active'));
+      document.getElementById(p).classList.add('active');
+      document.querySelector(`[data-page="${p}"]`).classList.add('active');
+      if(p==='usuarios')loadUsuarios();
+      if(p==='categorias')loadCategorias();
+      if(p==='articulos')loadArticulos();
+      if(p==='movimientos')loadMovimientos();
+    }
+
+    function alert(m,t='success'){
+      const c=document.getElementById('alert-container');
+      const a=document.createElement('div');
+      a.className=`alert alert-${t} show`;
+      a.textContent=m;
+      c.appendChild(a);
+      setTimeout(()=>{a.classList.remove('show');setTimeout(()=>a.remove(),300)},3000);
+    }
+
+    function esc(t){if(!t&&t!==0)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+    window.openModal = async (t, id = null) => {
+      const m = document.getElementById(`modal-${t}`);
+      const f = document.getElementById(`form-${t}`);
+      f.reset();
+      
+      const idField = document.getElementById(`id-${t}`);
+      if (idField) idField.value = '';
+      
+      if (t === 'movimiento') {
+        if (cache.articulos.length === 0) await loadArticulos();
+        if (cache.usuarios.length === 0) await loadUsuarios();
+      }
+      
+      if (t === 'usuario' && id) {
+        const u = cache.usuarios.find(x => x.id_usuario === id);
+        if (u) {
+          document.getElementById('id-usuario').value = u.id_usuario;
+          document.getElementById('nombre-usuario').value = u.nombre;
+          document.getElementById('usuario-usuario').value = u.usuario;
+          document.getElementById('clave-usuario').value = u.clave || '';
+          document.getElementById('rol-usuario').value = u.rol;
+        }
+      }
+      if (t === 'categoria' && id) {
+        const c = cache.categorias.find(x => x.id_categoria === id);
+        if (c) {
+          document.getElementById('id-categoria').value = c.id_categoria;
+          document.getElementById('nombre-categoria').value = c.nombre_categoria;
+          document.getElementById('desc-categoria').value = c.descripcion || '';
+        }
+      }
+      if (t === 'articulo') {
+        if (cache.categorias.length === 0) await loadCategorias();
+        if (id) {
+          const a = cache.articulos.find(x => x.id_articulo === id);
+          if (a) {
+            document.getElementById('id-articulo').value = a.id_articulo;
+            document.getElementById('nombre-articulo').value = a.nombre;
+            document.getElementById('cat-articulo').value = a.id_categoria || '';
+            document.getElementById('desc-articulo').value = a.descripcion || '';
+            document.getElementById('stock-articulo').value = a.stock;
+            document.getElementById('ubic-articulo').value = a.ubicacion || '';
+          }
+        }
+      }
+      m.classList.add('active');
+    };
+
+    window.closeModal=t=>document.getElementById(`modal-${t}`).classList.remove('active');
+
+    window.del=async(t,id)=>{
+      if(!confirm('¿Eliminar permanentemente?'))return;
+      const table=t==='usuario'?'usuarios':t==='categoria'?'categorias':'articulos';
+      const col=t==='usuario'?'id_usuario':t==='categoria'?'id_categoria':'id_articulo';
+      const{error}=await supabase.from(table).delete().eq(col,id);
+      if(error){alert('Error: '+error.message,'danger');return}
+      alert('Eliminado');
+      if(t==='usuario')loadUsuarios();
+      if(t==='categoria')loadCategorias();
+      if(t==='articulo')loadArticulos();
+    };
+
+    window.toggleEstado=async(t,id,estadoActual)=>{
+      const nuevoEstado=estadoActual==='activo'?'inactivo':'activo';
+      const table=t==='usuario'?'usuarios':t==='categoria'?'categorias':'articulos';
+      const col=t==='usuario'?'id_usuario':t==='categoria'?'id_categoria':'id_articulo';
+      const{error}=await supabase.from(table).update({estado:nuevoEstado}).eq(col,id);
+      if(error){alert('Error: '+error.message,'danger');return}
+      alert(nuevoEstado==='activo'?'Activado':'Inactivado');
+      if(t==='usuario')loadUsuarios();
+      if(t==='categoria')loadCategorias();
+      if(t==='articulo')loadArticulos();
+    };
+
+    async function loadUsuarios(){
+      const{data,error}=await supabase.from('usuarios').select('*').order('id_usuario');
+      if(error){alert('Error: '+error.message,'danger');return}
+      cache.usuarios=data;
+      const tb=document.querySelector('#tabla-usuarios tbody');
+      tb.innerHTML='';
+      data.forEach(u=>{
+        const tr=document.createElement('tr');
+        const estado=u.estado||'activo';
+        if(estado==='inactivo')tr.classList.add('inactive');
+        const badgeEstado=estado==='activo'?'<span class="badge badge-success">Activo</span>':'<span class="badge badge-danger">Inactivo</span>';
+        const btnEstado=estado==='activo'?`<button class="btn btn-secondary btn-small" onclick="toggleEstado('usuario',${u.id_usuario},'${estado}')">🚫</button>`:`<button class="btn btn-success btn-small" onclick="toggleEstado('usuario',${u.id_usuario},'${estado}')">✓</button>`;
+        tr.innerHTML=`<td>${u.id_usuario}</td><td>${esc(u.nombre)}</td><td>${esc(u.usuario)}</td>
+          <td><span class="badge badge-info">${esc(u.rol)}</span> ${badgeEstado}</td>
+          <td><button class="btn btn-warning btn-small" onclick="openModal('usuario',${u.id_usuario})">✏️</button>
+          ${btnEstado}
+          <button class="btn btn-danger btn-small" onclick="del('usuario',${u.id_usuario})">🗑️</button></td>`;
+        tb.appendChild(tr);
+      });
+      const s=document.getElementById('user-movimiento');
+      s.innerHTML='<option value="">--</option>';
+      data.forEach(u=>{const o=document.createElement('option');o.value=u.id_usuario;o.textContent=u.nombre;s.appendChild(o)});
+    }
+
+    async function loadCategorias(){
+      const{data,error}=await supabase.from('categorias').select('*').order('nombre_categoria');
+      if(error){alert('Error: '+error.message,'danger');return}
+      cache.categorias=data;
+      const tb=document.querySelector('#tabla-categorias tbody');
+      tb.innerHTML='';
+      data.forEach(c=>{
+        const tr=document.createElement('tr');
+        const estado=c.estado||'activo';
+        if(estado==='inactivo')tr.classList.add('inactive');
+        const badgeEstado=estado==='activo'?'<span class="badge badge-success">Activo</span>':'<span class="badge badge-danger">Inactivo</span>';
+        const btnEstado=estado==='activo'?`<button class="btn btn-secondary btn-small" onclick="toggleEstado('categoria',${c.id_categoria},'${estado}')">🚫</button>`:`<button class="btn btn-success btn-small" onclick="toggleEstado('categoria',${c.id_categoria},'${estado}')">✓</button>`;
+        tr.innerHTML=`<td>${c.id_categoria}</td><td>${esc(c.nombre_categoria)}</td><td>${esc(c.descripcion||'')} ${badgeEstado}</td>
+          <td><button class="btn btn-warning btn-small" onclick="openModal('categoria',${c.id_categoria})">✏️</button>
+          ${btnEstado}
+          <button class="btn btn-danger btn-small" onclick="del('categoria',${c.id_categoria})">🗑️</button></td>`;
+        tb.appendChild(tr);
+      });
+      const s=document.getElementById('cat-articulo');
+      s.innerHTML='<option value="">--</option>';
+      data.forEach(c=>{const o=document.createElement('option');o.value=c.id_categoria;o.textContent=c.nombre_categoria;s.appendChild(o)});
+    }
+
+    async function loadArticulos(){
+      const{data,error}=await supabase.from('articulos').select('*').order('nombre');
+      if(error){alert('Error: '+error.message,'danger');return}
+      cache.articulos=data;
+      const tb=document.querySelector('#tabla-articulos tbody');
+      tb.innerHTML='';
+      const catMap={};
+      cache.categorias.forEach(c=>catMap[c.id_categoria]=c.nombre_categoria);
+      data.forEach(a=>{
+        const tr=document.createElement('tr');
+        const estado=a.estado||'activo';
+        if(estado==='inactivo')tr.classList.add('inactive');
+        const badgeEstado=estado==='activo'?'<span class="badge badge-success">Activo</span>':'<span class="badge badge-danger">Inactivo</span>';
+        const btnEstado=estado==='activo'?`<button class="btn btn-secondary btn-small" onclick="toggleEstado('articulo',${a.id_articulo},'${estado}')">🚫</button>`:`<button class="btn btn-success btn-small" onclick="toggleEstado('articulo',${a.id_articulo},'${estado}')">✓</button>`;
+        tr.innerHTML=`<td>${a.id_articulo}</td><td>${esc(a.nombre)}</td><td>${esc(catMap[a.id_categoria]||'')}</td>
+          <td>${a.stock}</td><td>${esc(a.ubicacion||'')} ${badgeEstado}</td>
+          <td><button class="btn btn-warning btn-small" onclick="openModal('articulo',${a.id_articulo})">✏️</button>
+          ${btnEstado}
+          <button class="btn btn-danger btn-small" onclick="del('articulo',${a.id_articulo})">🗑️</button></td>`;
+        tb.appendChild(tr);
+      });
+      const s=document.getElementById('art-movimiento');
+      s.innerHTML='<option value="">--</option>';
+      data.forEach(a=>{const o=document.createElement('option');o.value=a.id_articulo;o.textContent=`${a.nombre} (${a.stock})`;s.appendChild(o)});
+    }
+
+    async function loadMovimientos(){
+      const{data,error}=await supabase.from('movimientos').select('*').order('fecha',{ascending:false}).limit(50);
+      if(error){alert('Error: '+error.message,'danger');return}
+      const tb=document.querySelector('#tabla-movimientos tbody');
+      tb.innerHTML='';
+      
+      if(cache.articulos.length === 0) await loadArticulos();
+      if(cache.usuarios.length === 0) await loadUsuarios();
+      
+      const artMap={},userMap={};
+      cache.articulos.forEach(a=>artMap[a.id_articulo]=a.nombre);
+      cache.usuarios.forEach(u=>userMap[u.id_usuario]=u.nombre);
+      
+      data.forEach(m=>{
+        const tr=document.createElement('tr');
+        const fecha=new Date(m.fecha).toLocaleString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        tr.innerHTML=`<td>${m.id_movimientos||'—'}</td><td>${esc(artMap[m.id_articulo]||'')}</td>
+          <td>${m.tipo}</td><td>${m.cantidad}</td><td>${esc(userMap[m.id_usuario]||'')}</td><td>${fecha}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+
+    document.getElementById('form-usuario').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const id=document.getElementById('id-usuario').value;
+      const nombre=document.getElementById('nombre-usuario').value.trim();
+      const usuario=document.getElementById('usuario-usuario').value.trim();
+      const clave=document.getElementById('clave-usuario').value;
+      const rol=document.getElementById('rol-usuario').value;
+       if(id){
+        const{error}=await supabase.from('usuarios').update({nombre,usuario,clave,rol}).eq('id_usuario',id);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }else{
+        const{error}=await supabase.from('usuarios').insert([{nombre,usuario,clave,rol}]);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }
+      alert('Guardado');
+      closeModal('usuario');
+      loadUsuarios();
+    });
+
+    document.getElementById('form-categoria').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const id=document.getElementById('id-categoria').value;
+      const nombre=document.getElementById('nombre-categoria').value.trim();
+      const desc=document.getElementById('desc-categoria').value.trim();
+      if(id){
+        const{error}=await supabase.from('categorias').update({nombre_categoria:nombre,descripcion:desc}).eq('id_categoria',id);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }else{
+        const{error}=await supabase.from('categorias').insert([{nombre_categoria:nombre,descripcion:desc}]);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }
+      alert('Guardado');
+      closeModal('categoria');
+      loadCategorias();
+    });
+
+    document.getElementById('form-articulo').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const id=document.getElementById('id-articulo').value;
+      const nombre=document.getElementById('nombre-articulo').value.trim();
+      const catValue=document.getElementById('cat-articulo').value;
+const cat=catValue&&catValue!==''?parseInt(catValue):null;
+      const desc=document.getElementById('desc-articulo').value.trim();
+      const stock=parseInt(document.getElementById('stock-articulo').value)||0;
+      const ubic=document.getElementById('ubic-articulo').value.trim();
+      if(id){
+        const{error}=await supabase.from('articulos').update({nombre,id_categoria:cat,descripcion:desc,stock,ubicacion:ubic}).eq('id_articulo',id);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }else{
+        const{error}=await supabase.from('articulos').insert([{nombre,id_categoria:cat,descripcion:desc,stock,ubicacion:ubic}]);
+        if(error){alert('Error: '+error.message,'danger');return}
+      }
+      alert('Guardado');
+      closeModal('articulo');
+      loadArticulos();
+    });
+
+    document.getElementById('form-movimiento').addEventListener('submit',async e=>{
+      e.preventDefault();
+      const art=parseInt(document.getElementById('art-movimiento').value);
+      const tipo=document.getElementById('tipo-movimiento').value;
+      const cant=parseInt(document.getElementById('cant-movimiento').value);
+      const user=parseInt(document.getElementById('user-movimiento').value)||null;
+      const obs=document.getElementById('obs-movimiento').value.trim();
+      try{
+        const{data:mov,error:e1}=await supabase.from('movimientos').insert([{id_articulo:art,tipo,cantidad:cant,id_usuario:user,observaciones:obs}]).select().single();
+        if(e1)throw e1;
+        const{data:artData,error:e2}=await supabase.from('articulos').select('stock').eq('id_articulo',art).single();
+        if(e2)throw e2;
+        let newStock=artData.stock;
+        if(tipo==='entrada')newStock+=cant;
+        else newStock-=cant;
+        if(newStock<0){
+          await supabase.from('movimientos').delete().eq('id_movimiento',mov.id_movimiento);
+          alert('Stock insuficiente','danger');
+          return;
+        }
+        const{error:e3}=await supabase.from('articulos').update({stock:newStock}).eq('id_articulo',art);
+        if(e3)throw e3;
+        alert('Movimiento registrado');
+        closeModal('movimiento');
+        loadArticulos();
+        loadMovimientos();
+      }catch(err){
+        alert('Error: '+err.message,'danger');
+      }
+    });
+    
+    document.getElementById("logout").addEventListener("click", function() {
+    localStorage.removeItem("usuarioActivo"); // borra la sesión
+    window.location.href = "login.html"; // redirige al login
+  });
+
+
+  </script>
+</body>
+</html>
